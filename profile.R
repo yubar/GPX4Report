@@ -8,20 +8,34 @@ library(dplyr)
 library(geosphere)
 
 
-setwd("d:\\GH\\Tools\\Profile")
+#setwd("d:\\GH\\Tools\\Profile")
+setwd("c:\\Git\\scripts\\EleProfile")
+
+ddy <- 0.02
+colorDays <- "red3"
+colorProfile <- "steelblue4"
 
 track <- readGPX("track.gpx")$tracks[[1]][[1]]
 track$ele <- as.numeric(track$ele)
 track$leg <- distGeo(track[1:2])
-track$l <- dplyr::lag(cumsum(track$leg))
+track$l <- dplyr::lag(cumsum(track$leg))/1000
 track$l[1] <- 0
 
 track$dt <- as.POSIXct(track$time, format="%Y-%m-%dT%H:%M:%OS", tz = "UTC")
 attributes(track$dt)$tzone <- "Asia/Irkutsk"
 
-days <- group_modify(group_by(track, as.Date(track$dt)), ~ head(.x, 1))
-days <- days[2:nrow(days),]
+ymin = min(track$ele)
+ymax = max(track$ele)
+dy = ymax-ymin
+xmax = max(track$l)
+xlim = c(0, xmax)
+ylim = c(ymin-dy*ddy, ymax+dy*ddy)
 
+days <- group_modify(group_by(track, as.Date(track$dt)), ~ head(.x, 1))
+days$N <- seq.int(nrow(days))
+days$avg <- (days$l + dplyr::lead(days$l))/2
+days$avg[nrow(days)] =  (days$l[nrow(days)] + xmax)/2
+days$l[1] = NA
 #plot(track$l, track$ele)
 #distm(c(track$lon[1], track$lat[1]), c(track$lon[2], track$lat[2]), fun = distGeo)
 
@@ -34,26 +48,43 @@ library(ggplot2)
 
 #sp <- as.data.frame(spline(track$l, track$ele))
 #g + geom_line(data = sp, aes(x = x, y = y))
-ymin = min(track$ele)
-ymax = max(track$ele)
-dy = ymax-ymin
-xlim = c(0, max(track$l))
-ylim = c(ymin-dy*0.02, ymax+dy*0.02)
-
-g <- ggplot()
-
-g <- g + geom_linerange(data = days, aes(x=days$l,ymin=ylim[1], ymax=days$ele), color="red3")
-g <- g + geom_line(data=track, aes(x=l, y=ele), alpha=0.5, size=1, color="steelblue4") + geom_line(data=track, aes(x=l, y=ele), alpha=1, size=0.5, color="steelblue4")
-
-g <- g + scale_x_continuous(limits=xlim, expand = c(0, 0))
-g <- g + scale_y_continuous(limits=ylim, expand = c(0, 0))
 
 
-png(filename = "ele_alias_.png",width = 1280, height = 768, units = "px", type="cairo")
-g
+ga <- ggplot()
+ga <- ga + geom_linerange(data=days, aes(x=days$l, ymin=ylim[1], ymax=days$ele), color=colorDays)
+ga <- ga + geom_line(data=track, aes(x=l, y=ele), alpha=0.5, size=1, color=colorProfile) + geom_line(data=track, aes(x=l, y=ele), alpha=1, size=0.5, color=colorProfile)
+ga <- ga + annotate("text", x = days$avg, y = ymin-dy*ddy/2, label = days$N, color = colorDays, size = 4)
+ga <- ga + scale_x_continuous(limits=xlim, expand = c(0, 0), breaks=seq(0, xmax, by = 10))
+ga <- ga + scale_y_continuous(limits=ylim, expand = c(0, 0), breaks=seq(0, ymax, by = 100))
+ga <- ga + theme(
+	panel.margin = unit(0,"null")
+    , plot.margin = rep(unit(0,"null"),4)
+	, axis.title.x = element_text(hjust=1)
+	, axis.title.y = element_text(hjust=0.5)
+)
+ga <- ga + labs(x = "Расстояние, км.", y = "Высота, м.")
+
+
+
+png(filename = "ele_alias.png",width = 1280, height = 768, units = "px", type="cairo", bg = "transparent")
+ga
 dev.off()
 
+
+
 #######
+
+ga <- ga + theme(
+	panel.grid.major = element_blank()
+	, panel.grid.minor = element_blank()
+	, panel.background = element_blank()
+	, panel.margin = unit(0,"null")
+    , plot.margin = rep(unit(0,"null"),4)
+	, rect = element_rect(fill = "transparent")
+	, axis.title.x = element_text(hjust=1)
+	, axis.title.y = element_text(hjust=0.5)
+)
+
 summarise(group_map(group_by(track, as.Date(track$dt)), head(.x, 1)), x=l,ymin=500,ymax=ele)
 
 geom_linerange(aes(x=10000,ymin=500, ymax=1700))

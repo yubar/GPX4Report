@@ -2,8 +2,12 @@
 #install.packages("plotKML")
 #install.packages("geosphere")
 #install.packages("ggplot2")
+#install.packages("optparse")
+#install.packages("yaml")
+#install.packages("readr")
 
 #setwd("d:\\GH\\scripts\\EleProfile")
+#setwd("c:\\Git\\scripts\\EleProfile")
 
 ##consts
 #ddy <- 0.02
@@ -66,17 +70,29 @@ points <- read_csv(file=opt$points)
 
 library(ggplot2)
 
-calcPosition <- function(L, length, xpos) {
-	#xmax/config$Dims$Width
+getPosition <- function(L, length, xpos) {
 	return(list(xmin=L + length*(xpos-1), xmax=L + length*xpos))
+}
+
+getLabel <- function(pts) {
+	return(paste(points$Name, points$Ele, sep=", "))
+}
+
+getNudge <- function(pts) {
+	return(list(
+		x = unit(0.25*(points$xpos-0.5)*2, "lines"),
+		y = unit(0.25*(points$ypos-0.5)*2, "lines")
+	))
 }
 
 ga <- ggplot()
 ga <- ga + geom_linerange(data=days, aes(x=days$l, ymin=ylim[1], ymax=days$ele), color=config$Colors$Days)
 ga <- ga + geom_line(data=track, aes(x=l, y=ele), alpha=0.5, size=1, color=config$Colors$Profile) + geom_line(data=track, aes(x=l, y=ele), alpha=1, size=0.5, color=config$Colors$Profile)
-ga <- ga + geom_errorbarh(data=points[points$xpos!=0.5,], aes(xmin=calcPosition(L, length, xpos)$xmin, xmax=calcPosition(L, length, xpos)$xmax, y=Ele), color=config$Colors$Days, height=0)
+ga <- ga + geom_errorbarh(data=points[points$xpos!=0.5,], aes(xmin=getPosition(L, length, xpos)$xmin, xmax=getPosition(L, length, xpos)$xmax, y=Ele), color=config$Colors$Days, height=0)
 ga <- ga + geom_point(data=points, aes(x=L, y=Ele), color=config$Colors$Days, shape=1)
-ga <- ga + annotate("text", x = points$L, y = points$Ele, label = points$Name, color = config$Colors$Days, size = 3, hjust=points$xpos, vjust=points$ypos)
+#ga <- ga + annotate("text", x = points$L, y = points$Ele, label = points$Name, color = config$Colors$Days, size = 3, hjust=points$xpos, vjust=points$ypos)
+#ga <- ga + geom_text(data=points, aes(x=L, y=Ele, label=getLabel(points)), color = config$Colors$Days, size = 3, hjust=points$xpos, vjust=points$ypos, nudge_x=20, nudge_y=20)
+#ga <- ga + geom_text(data=points, aes(x=L, y=Ele, label=getLabel(points)), color = config$Colors$Days, size = 3, hjust=points$xpos, vjust=points$ypos, nudge_x=getNudge(points)$x, nudge_y=getNudge(points)$y)
 ga <- ga + annotate("text", x = days$avg, y = ymin-dy*config$Misc$ddy/2, label = days$N, color = config$Colors$Days, size = 4)
 ga <- ga + scale_x_continuous(limits=xlim, expand = c(0, 0), breaks=seq(0, xmax, by = 10))
 ga <- ga + scale_y_continuous(limits=ylim, expand = c(0, 0), breaks=seq(0, ymax, by = 100))
@@ -87,8 +103,6 @@ ga <- ga + theme(
 	, axis.title.y = element_text(hjust=0.5)
 )
 ga <- ga + labs(x = config$Labels$xAxis, y = config$Labels$yAxis)
-
-
 
 cat("Done\n")
 cat("Saving output... ")
@@ -101,6 +115,15 @@ cat("Completed.\n")
 
 
 #######
+
+
+
+# ga <- ga + geom_point(aes(x=110, y=2000), color=config$Colors$Days, shape=1)
+# ga <- ga + annotate("text", x = 110, y = 2000, label = "some long\ntext ", color = config$Colors$Days, size = 3, hjust=0.5, 1)
+
+# df = data.frame(x = 110, y = 2000, label = "some long\ntext")
+# ga + geom_text(data=df, aes(x = x, y = y, label = label), color = config$Colors$Days, size = 3, hjust=0.5, 1)
+
 #g + geom_text_repel(data=track, aes(x=l, y=ele, label=labels, color=config$Colors$Days, size=(if(labels=="") 0.125 else 3)), show.legend=FALSE, box.padding=0.125)
 # ga <- ga + theme(
 	# panel.grid.major = element_blank()

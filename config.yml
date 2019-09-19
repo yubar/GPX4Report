@@ -1,0 +1,12 @@
+Misc:
+    ddy: 0.02
+Colors:
+    Days: "red3"
+    Profile: "steelblue4"
+Labels:
+    xAxis: "Расстояние, км."
+    yAxis: "Высота, м."
+Dims: 
+    Width: 1024
+    Height: 768
+    

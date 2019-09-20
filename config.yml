@@ -2,14 +2,20 @@ Misc:
     ddy: 0.02
 Colors:
     Days: "red3"
-    Profile: "steelblue4"
+    Profile: "forestgreen"
+    POIs: "royalblue4"
 Labels:
     xAxis: "Расстояние, км."
     yAxis: "Высота, м."
-
-Dims: 
-    Width: 1024
-    Height: 768
+    Days: "Дни пути"
+Dims:
+    Width: 2040
+    Height: 1400
 Fontsize:
-    Days: 4
-    POIs: 3
+    Days: 6
+    POIs: 7
+    Axis_title: 20
+    Axis_text: 18
+Points:
+    Size: 3
+    Stroke: 1

@@ -6,7 +6,10 @@ Colors:
 Labels:
     xAxis: "Расстояние, км."
     yAxis: "Высота, м."
+
 Dims: 
     Width: 1024
     Height: 768
-    
+Fontsize:
+    Days: 4
+    POIs: 3

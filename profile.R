@@ -80,8 +80,8 @@ getLabel <- function(pts) {
 
 getNudge <- function(pts) {
 	return(list(
-		x = unit(0.25*(points$xpos-0.5)*2, "lines"),
-		y = unit(0.25*(points$ypos-0.5)*2, "lines")
+		x = (points$xpos-0.5)*2*config$Fontsize$POIs,
+		y = -5*(points$ypos-0.5)*2*config$Fontsize$POIs
 	))
 }
 
@@ -92,8 +92,8 @@ ga <- ga + geom_errorbarh(data=points[points$xpos!=0.5,], aes(xmin=getPosition(L
 ga <- ga + geom_point(data=points, aes(x=L, y=Ele), color=config$Colors$Days, shape=1)
 #ga <- ga + annotate("text", x = points$L, y = points$Ele, label = points$Name, color = config$Colors$Days, size = 3, hjust=points$xpos, vjust=points$ypos)
 #ga <- ga + geom_text(data=points, aes(x=L, y=Ele, label=getLabel(points)), color = config$Colors$Days, size = 3, hjust=points$xpos, vjust=points$ypos, nudge_x=20, nudge_y=20)
-#ga <- ga + geom_text(data=points, aes(x=L, y=Ele, label=getLabel(points)), color = config$Colors$Days, size = 3, hjust=points$xpos, vjust=points$ypos, nudge_x=getNudge(points)$x, nudge_y=getNudge(points)$y)
-ga <- ga + annotate("text", x = days$avg, y = ymin-dy*config$Misc$ddy/2, label = days$N, color = config$Colors$Days, size = 4)
+#ga <- ga + geom_text(data=points, aes(x=L, y=Ele, label=getLabel(points)), color = config$Colors$Days, size = config$Fontsize$Days, hjust=points$xpos, vjust=points$ypos, nudge_x=getNudge(points)$x, nudge_y=getNudge(points)$y)
+ga <- ga + annotate("text", x = days$avg, y = ymin-dy*config$Misc$ddy/2, label = days$N, color = config$Colors$Days, size = config$Fontsize$Days)
 ga <- ga + scale_x_continuous(limits=xlim, expand = c(0, 0), breaks=seq(0, xmax, by = 10))
 ga <- ga + scale_y_continuous(limits=ylim, expand = c(0, 0), breaks=seq(0, ymax, by = 100))
 ga <- ga + theme(
@@ -103,6 +103,8 @@ ga <- ga + theme(
 	, axis.title.y = element_text(hjust=0.5)
 )
 ga <- ga + labs(x = config$Labels$xAxis, y = config$Labels$yAxis)
+
+ga + geom_text(data=points, aes(x=L, y=Ele, label=getLabel(points)), color = config$Colors$Days, size = config$Fontsize$POIs, hjust=points$xpos, vjust=points$ypos, nudge_x=getNudge(points)$x, nudge_y=getNudge(points)$y)
 
 cat("Done\n")
 cat("Saving output... ")

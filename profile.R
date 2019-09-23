@@ -103,7 +103,7 @@ if(!file.exists(opt$track)){
 }
 gpx <- parseGPX(opt$track, opt$timezone, config$Misc$ddx, config$Misc$ddy)
 #qq <- parseGPX("VAH.gpx", "Asia/Irkutsk", 0.02)
-#gpx <- parseGPX("Kamcha.gpx", "Asia/Kamchatka", 0.02)
+#gpx <- parseGPX("Kamcha.gpx", "Asia/Kamchatka", 0.0025, 0.03)
 #poi <- parsePOI ("Kamcha.csv")
 usePoints <- FALSE
 if(!file.exists(opt$points)){
@@ -131,10 +131,14 @@ ga <- ga + theme(
 	scale_x_continuous(limits=gpx$props$xlim, expand = c(0, 0), breaks=seq(0, gpx$props$xmax, by = 10)) +
 	labs(x=config$Labels$xAxis, y=config$Labels$yAxis)	
 
-ga <- ga + 
-	geom_line(data=gpx$track, aes(x=l, y=ele), alpha=0.5, size=1.5, color=config$Colors$Profile) +
-	geom_line(data=gpx$track, aes(x=l, y=ele), alpha=1, size=1, color=config$Colors$Profile)
-	
+#ga <- ga + 
+#	geom_line(data=gpx$track, aes(x=l, y=ele), alpha=0.5, size=1.5, color=config$Colors$Profile) +
+#	geom_line(data=gpx$track, aes(x=l, y=ele), alpha=1, size=1, color=config$Colors$Profile)
+
+ga <- ga +
+	geom_ribbon(data=gpx$track, aes(x=l, ymin=gpx$props$ylim[1], ymax=ele), alpha=0.1, fill=config$Colors$Profile, color=config$Colors$Profile, size=1)
+
+
 ga <- ga + 
 	geom_linerange(data=gpx$days, aes(x=gpx$days$l, ymin=gpx$props$ylim[1], ymax=gpx$days$ele), color=config$Colors$Days) +
 	annotate("text", x = gpx$days$avg, y = gpx$props$ymin-0.85*gpx$props$dy*config$Misc$ddy, label = gpx$days$n, color = config$Colors$Days, size = config$Fontsize$Days, vjust=0) +

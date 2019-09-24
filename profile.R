@@ -103,6 +103,7 @@ if(!file.exists(opt$track)){
 }
 gpx <- parseGPX(opt$track, opt$timezone, config$Misc$ddx, config$Misc$ddy)
 #qq <- parseGPX("VAH.gpx", "Asia/Irkutsk", 0.02)
+#timezone <- "Asia/Kamchatka"
 #gpx <- parseGPX("Kamcha.gpx", "Asia/Kamchatka", 0.0025, 0.03)
 #poi <- parsePOI ("Kamcha.csv")
 usePoints <- FALSE
@@ -131,18 +132,19 @@ ga <- ga + theme(
 	scale_x_continuous(limits=gpx$props$xlim, expand = c(0, 0), breaks=seq(0, gpx$props$xmax, by = 10)) +
 	labs(x=config$Labels$xAxis, y=config$Labels$yAxis)	
 
-#ga <- ga + 
-#	geom_line(data=gpx$track, aes(x=l, y=ele), alpha=0.5, size=1.5, color=config$Colors$Profile) +
-#	geom_line(data=gpx$track, aes(x=l, y=ele), alpha=1, size=1, color=config$Colors$Profile)
-
+colVec <- rep(c(config$fill$color1,config$fill$color2),nrow(gpx$days)%/%2+1)
 ga <- ga +
-	geom_ribbon(data=gpx$track, aes(x=l, ymin=gpx$props$ylim[1], ymax=ele), alpha=0.1, fill=config$Colors$Profile, color=config$Colors$Profile, size=1)
-
+	geom_ribbon(data=gpx$track, aes(x=l, ymin=gpx$props$ylim[1], ymax=ele, fill=factor(as.Date(gpx$track$dt, tz=opt$timezone))), alpha=config$fill$alpha, show.legend = FALSE)+
+	scale_fill_manual(values = colVec)
 
 ga <- ga + 
 	geom_linerange(data=gpx$days, aes(x=gpx$days$l, ymin=gpx$props$ylim[1], ymax=gpx$days$ele), color=config$Colors$Days) +
 	annotate("text", x = gpx$days$avg, y = gpx$props$ymin-0.85*gpx$props$dy*config$Misc$ddy, label = gpx$days$n, color = config$Colors$Days, size = config$Fontsize$Days, vjust=0) +
 	annotate("text", x = 2*gpx$props$xmax*config$Misc$ddx, y = gpx$props$ymin, label=config$Labels$Days, color=config$Colors$Days, size=config$Fontsize$Days, fontface="bold", hjust=0, vjust=1)
+
+ga <- ga + 
+	geom_line(data=gpx$track, aes(x=l, y=ele), alpha=1, size=1.5, color=config$Colors$Profile)
+
 
 if (usePoints) {
 	ga <- ga + 
@@ -150,7 +152,6 @@ if (usePoints) {
 		geom_point(data=poi$points, aes(x=L, y=Ele), color=config$Colors$POIs, shape=1, size=config$Points$Size, stroke=config$Points$Stroke) +
 		geom_text(data=poi$points, aes(x=L, y=Ele, label=label), color = config$Colors$POIs, size = config$Fontsize$POIs, hjust=poi$points$hjust, vjust=poi$points$vjust, nudge_x=poi$points$xnudge, nudge_y=poi$points$ynudge, lineheight=1)
 }
-
 
 cat("Saving output... ")
 

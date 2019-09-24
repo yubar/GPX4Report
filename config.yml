@@ -18,5 +18,9 @@ Fontsize:
     Axis_title: 20
     Axis_text: 18
 Points:
-    Size: 3
-    Stroke: 1
+    Size: 2.5
+    Stroke: 1.75
+fill:
+    color1: "forestgreen"
+    color2: "orangered4"
+    alpha: 0.12

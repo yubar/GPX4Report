@@ -21,6 +21,8 @@ Points:
     Size: 2.5
     Stroke: 1.75
 fill:
-    color1: "limegreen"
-    color2: "forestgreen"
+    color1: "#88eb7c" 
+    #"de3700" - red
+    color2: "#008c00"
+    #"#228b22" - forestgreen
     alpha: 0.15

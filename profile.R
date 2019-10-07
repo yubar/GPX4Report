@@ -150,8 +150,10 @@ plotOverviewMap <- function(gpx, opt, config, usePoints = FALSE, poi = NA){
 	#g <- ggplot()
 
 	g <- g + geom_path(data = tr, aes(x=lon, y=lat), alpha=0.75, size=3, colour=config$Colors$Overview)
-	g <- g + annotation_scale(location = "tl", width_hint = 1/10, height=unit(0.5, "cm"), bar_cols = c("gray30", "white"), text_col="black", text_cex = 2, plot_unit="m", pad_x = unit(20, "cm"), pad_y = unit(1, "cm"))
-	g <- g + annotation_scale(location = "br", width_hint = 1/10, height=unit(0.5, "cm"), bar_cols = c("gray30", "white"), text_col="black", text_cex = 2, plot_unit="m", pad_y = unit(3, "cm"))
+
+	g <- g + annotation_scale(location = "tl", width_hint = 1/10, height=unit(0.5, "cm"), bar_cols = c("gray30", "white"), text_col="black", text_cex = 2, plot_unit="m", pad_x = unit(20, "cm"), pad_y = unit(2, "cm"))
+	g <- g + annotation_scale(location = "br", width_hint = 1/10, height=unit(0.5, "cm"), bar_cols = c("gray30", "white"), text_col="black", text_cex = 2, plot_unit="m", pad_y = unit(4, "cm"))
+
 	# g <- g +
 		# scale_y_continuous(breaks=seq(0, max(tr$lat), by = 5000)) +
 		# scale_x_continuous(breaks=seq(0, max(tr$lon), by = 5000)) +

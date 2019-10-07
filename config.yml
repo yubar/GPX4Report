@@ -5,8 +5,6 @@ Colors:
     Days: "red3"
     Profile: "forestgreen"
     POIs: "royalblue4"
-    Overview: "red"
-    OverviewText: "red3"
 Labels:
     xAxis: "Расстояние, км."
     yAxis: "Высота, м."
@@ -30,3 +28,8 @@ fill:
     color2: "#008c00"
     #"#228b22" - forestgreen
     alpha: 0.15
+overview:
+    colTrack: "red"
+    colPoints: "red4"
+    colArrows: "red4"
+    colText: "firebrick4"

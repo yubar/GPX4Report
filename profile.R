@@ -129,6 +129,7 @@ plotOverviewMap <- function(gpx, opt, config, usePoints = FALSE, poi = NA){
 	suppressMessages(library(raster))
 	suppressMessages(library(ggplot2))
 	suppressMessages(library(ggspatial))
+	suppressMessages(library(shadowtext))
 	
 	cat("Reading GeoTiff... ")
 	s <- stack("Kamcha_overview.tif")
@@ -139,6 +140,8 @@ plotOverviewMap <- function(gpx, opt, config, usePoints = FALSE, poi = NA){
 	proj4string(tr) <- "+init=epsg:4326"
 	tr <- spTransform(tr, CRS = CRS("+proj=merc +a=6378137 +b=6378137 +lat_ts=0.0 +lon_0=0.0 +x_0=0.0 +y_0=0 +k=1.0 +units=m +nadgrids=@null +no_defs"))
 	tr <- data.frame(tr)
+	
+	
 
 	source("ggplotRGB.R")
 
@@ -149,7 +152,7 @@ plotOverviewMap <- function(gpx, opt, config, usePoints = FALSE, poi = NA){
 	g <- ggplotRGB(s, npix = ncell(s))
 	#g <- ggplot()
 
-	g <- g + geom_path(data = tr, aes(x=lon, y=lat), alpha=0.75, size=3, colour=config$Colors$Overview)
+	g <- g + geom_path(data = tr, aes(x=lon, y=lat), alpha=0.75, size=3, colour=config$overview$colTrack)
 
 	g <- g + annotation_scale(location = "tl", width_hint = 1/10, height=unit(0.5, "cm"), bar_cols = c("gray30", "white"), text_col="black", text_cex = 2, plot_unit="m", pad_x = unit(20, "cm"), pad_y = unit(2, "cm"))
 	g <- g + annotation_scale(location = "br", width_hint = 1/10, height=unit(0.5, "cm"), bar_cols = c("gray30", "white"), text_col="black", text_cex = 2, plot_unit="m", pad_y = unit(4, "cm"))
@@ -160,28 +163,45 @@ plotOverviewMap <- function(gpx, opt, config, usePoints = FALSE, poi = NA){
 		# theme(axis.text.x = element_text(angle = 90))
 
 	#start
-	g <- g + geom_text(aes(x = tr$lon[1], y = tr$lat[1]), label=config$Labels$OverviewStart, colour=config$Colors$OverviewText, size=10, hjust=0, vjust=1, nudge_x=1000, nudge_y=0)
-	g <- g + geom_curve(aes(x = tr$lon[1], y = tr$lat[1], xend = tr$lon[10], yend = tr$lat[10]), curvature = 0, arrow = arrW, colour=config$Colors$OverviewText, size = 2, alpha=0.75, lineend = "butt")
+	g <- g + geom_text(aes(x = tr$lon[1], y = tr$lat[1]), label=config$Labels$OverviewStart, colour=config$overview$colText, size=10, hjust=0, vjust=1, nudge_x=1000, nudge_y=0)
+	g <- g + geom_curve(aes(x = tr$lon[1], y = tr$lat[1], xend = tr$lon[10], yend = tr$lat[10]), curvature = 0, arrow = arrW, colour=config$overview$colText, size = 2, alpha=0.75, lineend = "butt")
 	#finish
-	g <- g + geom_point(aes(x = tr$lon[nrow(tr)], y = tr$lat[nrow(tr)]), colour = "black", shape=21, size=10, stroke=5)
-	g <- g + geom_point(aes(x = tr$lon[nrow(tr)], y = tr$lat[nrow(tr)]), colour = config$Colors$OverviewText, shape=21, size=10, stroke=3)
-	g <- g + geom_text(aes(x = tr$lon[nrow(tr)], y = tr$lat[nrow(tr)]), label=config$Labels$OverviewEnd, colour=config$Colors$OverviewText, size=10, hjust=1, vjust=0.5, nudge_x=-1000)
+	g <- g + geom_point(aes(x = tr$lon[nrow(tr)], y = tr$lat[nrow(tr)]), colour = config$overview$colPoints, shape=21, size=15, stroke=3)
+	g <- g + geom_text(aes(x = tr$lon[nrow(tr)], y = tr$lat[nrow(tr)]), label=config$Labels$OverviewEnd, colour=config$overview$colText, size=10, hjust=1, vjust=0.5, nudge_x=-1000)
 	#arrows
-	g <- g + geom_curve(aes(x = 17585000, y = 7200000, xend = 17590000, yend = 7190000), curvature = 0.2, arrow = arr, colour=config$Colors$OverviewText, size = 2, alpha=0.75, lineend = "butt")
+	g <- g + geom_curve(aes(x = 17585000, y = 7200000, xend = 17590000, yend = 7190000), curvature = 0.2, arrow = arr, colour=config$overview$colArrows, size = 2, alpha=0.75, lineend = "butt")
 
-	g <- g + geom_curve(aes(x = 17604000, y = 7139000, xend = 17609000, yend = 7144000), curvature = 0.2, arrow = arr, colour=config$Colors$OverviewText, size = 2, alpha=0.75, lineend = "butt")
+	g <- g + geom_curve(aes(x = 17604000, y = 7139000, xend = 17609000, yend = 7144000), curvature = 0.2, arrow = arr, colour=config$overview$colArrows, size = 2, alpha=0.75, lineend = "butt")
 
-	g <- g + geom_curve(aes(x = 17645000, y = 7135000, xend = 17652500, yend = 7130000), curvature = -0.4, arrow = arr, colour=config$Colors$OverviewText, size = 2, alpha=0.75, lineend = "butt")
-	g <- g + geom_curve(aes(x = 17657000, y = 7127000, xend = 17663000, yend = 7123000), curvature = 0.1, arrow = arr, colour=config$Colors$OverviewText, size = 2, alpha=0.75, lineend = "butt")
+	g <- g + geom_curve(aes(x = 17645000, y = 7135000, xend = 17652500, yend = 7130000), curvature = -0.5, arrow = arr, colour=config$overview$colArrows, size = 2, alpha=0.75, lineend = "butt")
+	g <- g + geom_curve(aes(x = 17657000, y = 7127000, xend = 17663000, yend = 7123000), curvature = 0.1, arrow = arr, colour=config$overview$colArrows, size = 2, alpha=0.75, lineend = "butt")
 
-	g <- g + geom_curve(aes(x = 17685000, y = 7090000, xend = 17692000, yend = 7098000), curvature = 0.2, arrow = arr, colour=config$Colors$OverviewText, size = 2, alpha=0.75, lineend = "butt")
-	g <- g + geom_curve(aes(x = 17694500, y = 7095000, xend = 17678000, yend = 7082000), curvature = -0.2, arrow = arr, colour=config$Colors$OverviewText, size = 2, alpha=0.75, lineend = "butt")
+	g <- g + geom_curve(aes(x = 17685000, y = 7090000, xend = 17692000, yend = 7098000), curvature = 0.2, arrow = arr, colour=config$overview$colArrows, size = 2, alpha=0.75, lineend = "butt")
+	g <- g + geom_curve(aes(x = 17694500, y = 7095000, xend = 17678000, yend = 7082000), curvature = -0.2, arrow = arr, colour=config$overview$colArrows, size = 2, alpha=0.75, lineend = "butt")
 
-	g <- g + geom_curve(aes(x = 17672000, y = 7031000, xend = 17679000, yend = 7031000), curvature = 0.2, arrow = arr, colour=config$Colors$OverviewText, size = 2, alpha=0.75, lineend = "butt")
-	g <- g + geom_curve(aes(x = 17681000, y = 7032000, xend = 17674000, yend = 7034000), curvature = 0.3, arrow = arr, colour=config$Colors$OverviewText, size = 2, alpha=0.75, lineend = "butt")
-
+	g <- g + geom_curve(aes(x = 17672000, y = 7031000, xend = 17679000, yend = 7031000), curvature = 0.2, arrow = arr, colour=config$overview$colArrows, size = 2, alpha=0.75, lineend = "butt")
+	g <- g + geom_curve(aes(x = 17681000, y = 7032000, xend = 17674000, yend = 7034000), curvature = 0.3, arrow = arr, colour=config$overview$colArrows, size = 2, alpha=0.75, lineend = "butt")
+	
+	#nights
+	
+	trd <- as.data.frame(gpx$days)
+	coordinates(trd) <- ~ lon + lat
+	proj4string(trd) <- "+init=epsg:4326"
+	trd <- spTransform(trd, CRS = CRS("+proj=merc +a=6378137 +b=6378137 +lat_ts=0.0 +lon_0=0.0 +x_0=0.0 +y_0=0 +k=1.0 +units=m +nadgrids=@null +no_defs"))
+	trd <- data.frame(trd)[2:nrow(trd),]
+	trd$label <- format(as.Date(trd$dt, tz = "Asia/Kamchatka")-1, "%d.%m")
+	trd$hjust <- 0
+	trd$vjust <- 0
+	trd$hjust[c(3,4,5,7,9,10)] <- 1
+	trd$vjust[c(9,10,14)] <- 1
+	trd$xnudge <- (-1)^trd$hjust*550
+	trd$ynudge <- (-1)^trd$vjust*250
+	trd$xnudge[c(3,4,7,9,10,14)] <- c(-700, -700, -700, -700 , -700, 500)
+	trd$ynudge[c(3,4,7,9,10,11,12,14)] <- c(-100, -100, 0, 100, 100, 1000, 100, -1000)
+	g <- g + geom_point(aes(x = trd$lon, y = trd$lat), colour = config$overview$colPoints, shape=24, size=9, stroke=2)
+	g <- g + geom_shadowtext(aes(x = trd$lon, y = trd$lat, label= trd$label), colour = "red4", bg.colour = "white", bg.r=0.05, size=8, hjust=trd$hjust, vjust=trd$vjust, nudge_x=trd$xnudge, nudge_y=trd$ynudge, alpha=0.5)
 	#g
-
+	
 	g <- g + theme(
 				panel.margin = unit(0, "null")
 				, plot.margin = unit(c(0, 0, 0, 0), "mm")

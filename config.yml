@@ -5,10 +5,14 @@ Colors:
     Days: "red3"
     Profile: "forestgreen"
     POIs: "royalblue4"
+    Overview: "red"
+    OverviewText: "red3"
 Labels:
     xAxis: "Расстояние, км."
     yAxis: "Высота, м."
     Days: "Дни пути"
+    OverviewStart: "Начало маршрута 24.08"
+    OverviewEnd: "Окончание маршрута 07.09"
 Dims:
     Width: 2040
     Height: 1400

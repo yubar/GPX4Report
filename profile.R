@@ -199,7 +199,8 @@ plotOverviewMap <- function(gpx, opt, config, usePoints = FALSE, poi = NA){
 	trd$xnudge[c(3,4,7,9,10,14)] <- c(-700, -700, -700, -700 , -700, 500)
 	trd$ynudge[c(3,4,7,9,10,11,12,14)] <- c(-100, -100, 0, 100, 100, 1000, 100, -1000)
 	g <- g + geom_point(aes(x = trd$lon, y = trd$lat), colour = config$overview$colPoints, shape=24, size=9, stroke=2)
-	g <- g + geom_shadowtext(aes(x = trd$lon, y = trd$lat, label= trd$label), colour = "red4", bg.colour = "white", bg.r=0.05, size=8, hjust=trd$hjust, vjust=trd$vjust, nudge_x=trd$xnudge, nudge_y=trd$ynudge, alpha=0.5)
+	g <- g + geom_text(aes(x = trd$lon, y = trd$lat, label= trd$label), colour = "red4", size=8, hjust=trd$hjust, vjust=trd$vjust, nudge_x=trd$xnudge, nudge_y=trd$ynudge, alpha=0.75)
+	#g <- g + geom_shadowtext(aes(x = trd$lon, y = trd$lat, label= trd$label), colour = "red4", bg.colour = "white", bg.r=0.5, size=8, hjust=trd$hjust, vjust=trd$vjust, nudge_x=trd$xnudge, nudge_y=trd$ynudge, alpha=0.5)
 	#g
 	
 	g <- g + theme(

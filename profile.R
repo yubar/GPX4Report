@@ -162,12 +162,6 @@ plotOverviewMap <- function(gpx, opt, config, usePoints = FALSE, poi = NA){
 		# scale_x_continuous(breaks=seq(0, max(tr$lon), by = 5000)) +
 		# theme(axis.text.x = element_text(angle = 90))
 
-	#start
-	g <- g + geom_text(aes(x = tr$lon[1], y = tr$lat[1]), label=config$Labels$OverviewStart, colour=config$overview$colText, size=10, hjust=0, vjust=1, nudge_x=1000, nudge_y=0)
-	g <- g + geom_curve(aes(x = tr$lon[1], y = tr$lat[1], xend = tr$lon[10], yend = tr$lat[10]), curvature = 0, arrow = arrW, colour=config$overview$colText, size = 2, alpha=0.75, lineend = "butt")
-	#finish
-	g <- g + geom_point(aes(x = tr$lon[nrow(tr)], y = tr$lat[nrow(tr)]), colour = config$overview$colPoints, shape=21, size=15, stroke=3)
-	g <- g + geom_text(aes(x = tr$lon[nrow(tr)], y = tr$lat[nrow(tr)]), label=config$Labels$OverviewEnd, colour=config$overview$colText, size=10, hjust=1, vjust=0.5, nudge_x=-1000)
 	#arrows
 	g <- g + geom_curve(aes(x = 17585000, y = 7200000, xend = 17590000, yend = 7190000), curvature = 0.2, arrow = arr, colour=config$overview$colArrows, size = 2, alpha=0.75, lineend = "butt")
 
@@ -183,7 +177,6 @@ plotOverviewMap <- function(gpx, opt, config, usePoints = FALSE, poi = NA){
 	g <- g + geom_curve(aes(x = 17681000, y = 7032000, xend = 17674000, yend = 7034000), curvature = 0.3, arrow = arr, colour=config$overview$colArrows, size = 2, alpha=0.75, lineend = "butt")
 	
 	#nights
-	
 	trd <- as.data.frame(gpx$days)
 	coordinates(trd) <- ~ lon + lat
 	proj4string(trd) <- "+init=epsg:4326"
@@ -198,9 +191,19 @@ plotOverviewMap <- function(gpx, opt, config, usePoints = FALSE, poi = NA){
 	trd$ynudge <- (-1)^trd$vjust*250
 	trd$xnudge[c(3,4,7,9,10,14)] <- c(-700, -700, -700, -700 , -700, 500)
 	trd$ynudge[c(3,4,7,9,10,11,12,14)] <- c(-100, -100, 0, 100, 100, 1000, 100, -1000)
+	g <- g + geom_point(aes(x = trd$lon, y = trd$lat), colour = config$overview$colShadow, shape=24, size=9, stroke=4, alpha=0.5)
 	g <- g + geom_point(aes(x = trd$lon, y = trd$lat), colour = config$overview$colPoints, shape=24, size=9, stroke=2)
-	g <- g + geom_text(aes(x = trd$lon, y = trd$lat, label= trd$label), colour = "red4", size=8, hjust=trd$hjust, vjust=trd$vjust, nudge_x=trd$xnudge, nudge_y=trd$ynudge, alpha=0.75)
-	#g <- g + geom_shadowtext(aes(x = trd$lon, y = trd$lat, label= trd$label), colour = "red4", bg.colour = "white", bg.r=0.5, size=8, hjust=trd$hjust, vjust=trd$vjust, nudge_x=trd$xnudge, nudge_y=trd$ynudge, alpha=0.5)
+	g <- g + geom_shadowtext(aes(x = trd$lon, y = trd$lat, label= trd$label), colour = config$overview$colText, bg.colour = config$overview$colShadow, bg.r=0.3, size=8, hjust=trd$hjust, vjust=trd$vjust, nudge_x=trd$xnudge, nudge_y=trd$ynudge, alpha=0.5)
+	g <- g + geom_text(aes(x = trd$lon, y = trd$lat, label= trd$label), colour = config$overview$colText, size=8, hjust=trd$hjust, vjust=trd$vjust, nudge_x=trd$xnudge, nudge_y=trd$ynudge, alpha=0.9)
+	
+	
+	#start
+	g <- g + geom_text(aes(x = tr$lon[1], y = tr$lat[1]), label=config$Labels$OverviewStart, colour=config$overview$colText, size=10, hjust=0, vjust=1, nudge_x=1000, nudge_y=0)
+	g <- g + geom_curve(aes(x = tr$lon[1], y = tr$lat[1], xend = tr$lon[10], yend = tr$lat[10]), curvature = 0, arrow = arrW, colour=config$overview$colText, size = 2, alpha=0.75, lineend = "butt")
+	#finish
+	g <- g + geom_point(aes(x = tr$lon[nrow(tr)], y = tr$lat[nrow(tr)]), colour = config$overview$colPoints, shape=21, size=15, stroke=3)
+	g <- g + geom_text(aes(x = tr$lon[nrow(tr)], y = tr$lat[nrow(tr)]), label=config$Labels$OverviewEnd, colour=config$overview$colText, size=10, hjust=1, vjust=0.5, nudge_x=-1000)
+	
 	#g
 	
 	g <- g + theme(

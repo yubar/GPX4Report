@@ -30,6 +30,7 @@ fill:
     alpha: 0.15
 overview:
     colTrack: "red"
-    colPoints: "red4"
-    colArrows: "red4"
-    colText: "firebrick4"
+    colPoints: "red3"
+    colArrows: "red3"
+    colText: "red3"
+    colShadow: "white"

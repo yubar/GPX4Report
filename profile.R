@@ -76,17 +76,40 @@ parsePOI <- function(filename){
 	))
 }
 
-trackSummary <- function(x){
+secFormat <- function(s, useSec = T) {
+	o <- data.frame()
+	h <- s %/% 3600
+	if(useSec) {
+		m <- s %% 3600 %/% 60
+		s <- s %% 60
+	} else {
+		m = round(s %% 3600 / 60)
+		h[m==60] <- h[m==60]+1
+		m[m==60] <- 0
+	}
+	out <- sprintf("%02d:%02d", h, m)
+	if (useSec) out <- paste0(out, sprintf(":%02d", s))
 	
-	minspd <- 0.5
+	return(out)
+}
+
+trackSummary <- function(x, minspd = 0.5){
+	
+	suppressMessages(library(zoo))
 	
 	x <- x[complete.cases(x),]
 	
 	time_overall <- as.numeric(difftime(x$dt[nrow(x)],x$dt[1], unit="secs"))
+	len = sum(x$leg)/1000
 	
 	x <- x[x$spd >= minspd,]
 	
-	dele <- diff(x$ele)
+	
+	ele <- rollapply(x$ele, width = 5, by = 3, FUN = mean, align = "center")
+	
+	ele <- c(x$ele[1], ele, x$ele[nrow(x)])
+	
+	dele <- diff(ele)
 
 	return(data.frame(
 		time_overall = time_overall,
@@ -96,10 +119,17 @@ trackSummary <- function(x){
 		ele_start = x$ele[1],
 		ele_finish = x$ele[nrow(x)],
 		ele_min = min(x$ele),
-		ele_max = max(x$ele)
+		ele_max = max(x$ele),
+		len = len
 	))
 }
 
+'''
+tr <- gpx$track
+fileTZ = "Europe/Moscow"
+trackTZ = "Asia/Kamchatka"
+filename="moving.csv"
+'''
 segmentStats <- function(tr, trackTZ, filename, fileTZ = "Europe/Moscow") {
 	suppressMessages(library(readr))
 
@@ -114,12 +144,42 @@ segmentStats <- function(tr, trackTZ, filename, fileTZ = "Europe/Moscow") {
 
 	if (any(is.na(ix))) stop("One of moving breaks not found")
 
-	parts <- split(tr, cumsum(1:nrow(tr) %in% ix))
+	parts <- split(tr, cumsum(1:nrow(tr) %in% (ix + 1)))
 
-	return (as.data.frame(
+	stats <- as.data.frame(
 		cbind(mov, do.call(rbind, lapply(parts, trackSummary)))
-	))
+	)
+	
+	stats$time_overall_fmt <- secFormat(stats$time_overall)
+	stats$time_moving_fmt <- secFormat(stats$time_moving)
+	return(stats)
+	
 }
+
+writeSegmentStats <- function(stats, outfilename = "segmentStats.xlsx") {
+	suppressMessages(library(writexl))
+	
+	out <- data.frame(
+		n=stats$n
+		, date=stats$date
+		, desc=stats$desc
+		, len=round(stats$len, 1)
+		, gain=paste0("+", round(stats$ele_gain), "\n-", round(stats$ele_loss))
+		, movtime=secFormat(stats$time_moving, F)
+	)
+	summ <- data.frame(
+			NA
+			, NA
+			, "Итого:"
+			, round(sum(stats$len), 1)
+			, paste0("+", round(sum(stats$ele_gain)), "\n-", round(sum(stats$ele_loss)))
+			, secFormat(sum(stats$time_moving), F)
+	)
+	summ <- setNames(summ, names(out))
+	out <- rbind(out, summ)
+	write_xlsx(out, outfilename)
+}
+
 
 plotElevation <- function(gpx, opt, config, usePoints = FALSE, poi = NA) {
 
@@ -325,6 +385,7 @@ if(!file.exists(opt$points)){
 
 #plotElevation(gpx, opt, config, usePoints, poi)
 #plotOverviewMap(gpx, opt, config, usePoints, poi)
-segmentStats(gpx$track, trackTZ="Asia/Kamchatka", filename="moving.csv")
+stats <- segmentStats(gpx$track, trackTZ="Asia/Kamchatka", filename="moving.csv")
+writeSegmentStats(stats, "SegmentStats.xlsx")
 
 cat("\nExecution completed.\n")

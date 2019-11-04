@@ -18,9 +18,12 @@ parseGPX <- function(filename, timezone, ddx, ddy){
 	track$leg <- distGeo(track[1:2])
 	track$l <- dplyr::lag(cumsum(track$leg))/1000
 	track$l[1] <- 0
-
+	
 	track$dt <- as.POSIXct(track$time, format="%Y-%m-%dT%H:%M:%OS", tz = "UTC")
 	attributes(track$dt)$tzone <- timezone
+	
+	track$ltm <- c(as.numeric(diff(track$dt)),NA)
+	track$spd <- track$leg/track$ltm * 3.6
 
 	props<-list()
 	props$ymin <- min(track$ele)
@@ -70,6 +73,51 @@ parsePOI <- function(filename){
 	return(list(
 		points=points
 		,lines=lines
+	))
+}
+
+trackSummary <- function(x){
+	
+	minspd <- 0.5
+	
+	x <- x[complete.cases(x),]
+	
+	time_overall <- as.numeric(difftime(x$dt[nrow(x)],x$dt[1], unit="secs"))
+	
+	x <- x[x$spd >= minspd,]
+	
+	dele <- diff(x$ele)
+
+	return(data.frame(
+		time_overall = time_overall,
+		time_moving = sum(x$ltm),
+		ele_gain = sum(dele[dele > 0]),
+		ele_loss = -sum(dele[dele < 0]),
+		ele_start = x$ele[1],
+		ele_finish = x$ele[nrow(x)],
+		ele_min = min(x$ele),
+		ele_max = max(x$ele)
+	))
+}
+
+segmentStats <- function(tr, trackTZ, filename, fileTZ = "Europe/Moscow") {
+	suppressMessages(library(readr))
+
+	mov <- read_csv(file=filename, trim_ws=FALSE, col_types=list())
+
+	mov$dt <- as.POSIXct(paste(mov$date, mov$time), format="%d.%m.%Y %H:%M:%OS", tz = fileTZ)
+	attributes(mov$dt)$tzone <- trackTZ
+
+	ix <- match(mov$dt,tr$dt)
+
+	ix <- ix[1:length(ix)-1]
+
+	if (any(is.na(ix))) stop("One of moving breaks not found")
+
+	parts <- split(tr, cumsum(1:nrow(tr) %in% ix))
+
+	return (as.data.frame(
+		cbind(mov, do.call(rbind, lapply(parts, trackSummary)))
 	))
 }
 
@@ -276,6 +324,7 @@ if(!file.exists(opt$points)){
 }
 
 #plotElevation(gpx, opt, config, usePoints, poi)
-plotOverviewMap(gpx, opt, config, usePoints, poi)
+#plotOverviewMap(gpx, opt, config, usePoints, poi)
+segmentStats(gpx$track, trackTZ="Asia/Kamchatka", filename="moving.csv")
 
 cat("\nExecution completed.\n")

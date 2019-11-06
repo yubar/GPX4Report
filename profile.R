@@ -5,6 +5,8 @@
 #install.packages("optparse")
 #install.packages("yaml")
 #install.packages("readr")
+#install.packages("writexl")
+#install.packages("pgirmess")
 
 parseGPX <- function(filename, timezone, ddx, ddy){
 
@@ -180,6 +182,22 @@ writeSegmentStats <- function(stats, outfilename = "segmentStats.xlsx") {
 	write_xlsx(out, outfilename)
 }
 
+splitGpxDays <- function(tr){
+	suppressMessages(library(pgirmess))
+	suppressMessages(library(dplyr))
+	
+	saveGpx <- function(x){
+		df <- data.frame(label="", lon=x$lon, lat=x$lat, ele=x$ele)
+		nam <- format(x$dt[1],"%Y%m%d")
+		writeGPX(df, nam, type="t")
+	}
+	
+	stays <- data.frame(lon=tr$lon, lat=tr$lat, ele=tr$ele)[2:nrow(tr),]
+	stays <- cbind(label=format(tr$dt[1:nrow(tr)-1], "%d.%m.%Y"), stays)
+	writeGPX(stays, "stays", type="w")
+
+	group_map(group_by(tr, as.Date(tr$dt, tz=trackTZ)), ~ saveGpx(.x))
+}
 
 plotElevation <- function(gpx, opt, config, usePoints = FALSE, poi = NA) {
 

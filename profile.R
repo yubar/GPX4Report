@@ -8,6 +8,17 @@
 #install.packages("writexl")
 #install.packages("pgirmess")
 
+calcProps <- function(track, ddx, ddy){
+	props<-list()
+	props$ymin <- min(track$ele)
+	props$ymax <- max(track$ele)
+	props$dy <- props$ymax-props$ymin
+	props$xmax <- max(track$l)
+	props$xlim <- c(0, props$xmax + props$xmax*ddx)
+	props$ylim <- c(props$ymin-props$dy*ddy, props$ymax+props$dy*ddy)
+	return(props)
+}
+
 parseGPX <- function(filename, timezone, ddx, ddy){
 
 	cat("Reading and processing GPX data... ")
@@ -27,13 +38,7 @@ parseGPX <- function(filename, timezone, ddx, ddy){
 	track$ltm <- c(as.numeric(diff(track$dt)),NA)
 	track$spd <- track$leg/track$ltm * 3.6
 
-	props<-list()
-	props$ymin <- min(track$ele)
-	props$ymax <- max(track$ele)
-	props$dy <- props$ymax-props$ymin
-	props$xmax <- max(track$l)
-	props$xlim <- c(0, props$xmax + props$xmax*ddx)
-	props$ylim <- c(props$ymin-props$dy*ddy, props$ymax+props$dy*ddy)
+	props <- calcProps(track, ddx, ddy)
 
 	days <- group_modify(group_by(track, as.Date(track$dt, tz=timezone)), ~ head(.x, 1))
 	days$n <- seq.int(nrow(days))
@@ -116,6 +121,8 @@ trackSummary <- function(x, minspd = 0.5){
 	return(data.frame(
 		time_overall = time_overall,
 		time_moving = sum(x$ltm),
+		time_start = min(x$dt),
+		time_finish = max(x$dt),
 		ele_gain = sum(dele[dele > 0]),
 		ele_loss = -sum(dele[dele < 0]),
 		ele_start = x$ele[1],
@@ -199,6 +206,29 @@ splitGpxDays <- function(tr){
 	group_map(group_by(tr, as.Date(tr$dt, tz=trackTZ)), ~ saveGpx(.x))
 }
 
+dayStats <- function(tr){
+	stats <- group_modify(group_by(tr, date = as.Date(tr$dt, tz=trackTZ)), ~ trackSummary(.x))
+	stats <- cbind(
+		data.frame(
+			date=format(stats$date, "%d.%m.%Y")
+			, len=round(stats$len, 1)
+			, ele_gain=round(stats$ele_gain)
+			, ele_loss=round(stats$ele_loss)
+			, time_start=format(stats$time_start, "%H:%M")
+			, time_finish=format(stats$time_finish, "%H:%M")
+			, time_overall=secFormat(stats$time_overall, F)
+			, time_moving=secFormat(stats$time_moving, F)
+		)
+		, round(stats[,c(8:11)])
+	)
+	return(stats)
+}
+
+writeDayStats <- function(stats, outfilename = "dayStats.xlsx") {
+	suppressMessages(library(writexl))
+	write_xlsx(stats, outfilename)
+}
+
 plotElevation <- function(gpx, opt, config, usePoints = FALSE, poi = NA) {
 
 	suppressMessages(library(ggplot2))
@@ -249,6 +279,8 @@ plotElevation <- function(gpx, opt, config, usePoints = FALSE, poi = NA) {
 	
 	cat("Completed.\n")
 }
+
+
 
 plotOverviewMap <- function(gpx, opt, config, usePoints = FALSE, poi = NA){
 
@@ -359,6 +391,77 @@ plotOverviewMap <- function(gpx, opt, config, usePoints = FALSE, poi = NA){
 	image_write(itop, path = "Kamcha_overview_1.png", format = "png")
 	image_write(ibtm, path = "Kamcha_overview_2.png", format = "png")
 	cat("Done\n")
+}
+
+prepareDayElevation <- function(tr, config) {
+	names(tr)[names(tr)=="l"]<-"lcum"
+	tr$l <- dplyr::lag(cumsum(tr$leg))/1000
+	tr$l[1] <- 0
+
+	pr <- calcProps(tr, 0, config$Misc$ddy)
+	
+	return(list(track=tr, props=pr))
+}
+
+calcBy <- function(range, count){
+	by0 <- round(range/count,2)
+	scl <- floor(log(by0,10))
+	by1 <- (log(by0/10^scl, 2)) + 1
+	if(by1 < 2) by1 <- round(by1) else by1 <- floor(by1);
+	if(by1==4) by1 <- 10 else if(by1==3) by1 <- 5
+	return(by1*10^scl)
+}
+
+plotDayElevation <- function(gpx, config) {
+
+	suppressMessages(library(ggplot2))
+
+	out <- paste0(format(gpx$track$dt[1], "%Y%m%d"), ".png")
+	
+	yticks <- config$days$height/config$days$tick_px
+	xticks <- config$days$width/config$days$tick_px
+	
+	ybreaks <- seq(0, gpx$props$ymax, by = calcBy(gpx$props$dy, yticks))
+	xbreaks <- seq(0, gpx$props$xmax, by = calcBy(gpx$props$xmax, xticks))
+	
+	ga <- ggplot()
+	ga <- ga + theme(
+				panel.margin = unit(0, "null")
+				, plot.margin = unit(c(0, 0, 0, 0), "mm")
+				, axis.title.x = element_text(hjust=1, size=config$days$Axis_title)
+				, axis.title.y = element_text(hjust=0.5,size=config$days$Axis_title)
+				, axis.line.x = element_line(color="black", size = 0.5)
+				, axis.line.y = element_line(color="black", size = 0.5)
+				, axis.text.x = element_text(size=config$days$Axis_text)
+				, axis.text.x.top = element_text(size=config$days$Axis_text_secondary)
+				, axis.text.y = element_text(size=config$days$Axis_text)
+				, axis.ticks.length=unit(.25, "cm")
+				, axis.ticks.y.right=element_blank()
+				, axis.text.y.right=element_blank()
+			) + 
+		scale_y_continuous(limits=gpx$props$ylim, expand = c(0, 0), breaks=ybreaks
+			,sec.axis = sec_axis(~.)) +
+		scale_x_continuous(limits=gpx$props$xlim, expand = c(0, 0), breaks=xbreaks
+			,sec.axis = sec_axis(~.+gpx$track$lcum[1], breaks=round(xbreaks+gpx$track$lcum[1]))) +
+		labs(x=config$Labels$xAxis, y=config$Labels$yAxis)	
+	
+	ga <- ga +
+		geom_ribbon(data=gpx$track, aes(x=l, ymin=gpx$props$ylim[1], ymax=ele), fill=config$fill$color1, alpha=config$fill$alpha, show.legend = FALSE)
+
+	ga <- ga + 
+		geom_line(data=gpx$track, aes(x=l, y=ele), alpha=0.5, size=1.5, color=config$Colors$Profile) + 
+		geom_line(data=gpx$track, aes(x=l, y=ele), alpha=1, size=1, color=config$Colors$Profile)
+
+	png(filename = out, width=config$days$width, height=config$days$height, units = "px", type="cairo")
+	print(ga)
+	invisible(dev.off())
+
+}
+
+plotDaysElevations <- function(tr){
+	cat("Saving days elevation profiles... ")
+	group_map(group_by(tr, date = as.Date(tr$dt, tz=trackTZ)), ~ plotDayElevation(prepareDayElevation(.x, config), config))
+	cat("Completed.\n")
 }
 
 #setwd("d:\\GH\\scripts\\EleProfile")

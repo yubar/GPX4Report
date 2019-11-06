@@ -133,12 +133,13 @@ trackSummary <- function(x, minspd = 0.5){
 	))
 }
 
-'''
+t<-'
 tr <- gpx$track
 fileTZ = "Europe/Moscow"
 trackTZ = "Asia/Kamchatka"
 filename="moving.csv"
-'''
+'
+
 segmentStats <- function(tr, trackTZ, filename, fileTZ = "Europe/Moscow") {
 	suppressMessages(library(readr))
 
@@ -340,7 +341,7 @@ plotOverviewMap <- function(gpx, opt, config, usePoints = FALSE, poi = NA){
 	proj4string(trd) <- "+init=epsg:4326"
 	trd <- spTransform(trd, CRS = CRS("+proj=merc +a=6378137 +b=6378137 +lat_ts=0.0 +lon_0=0.0 +x_0=0.0 +y_0=0 +k=1.0 +units=m +nadgrids=@null +no_defs"))
 	trd <- data.frame(trd)[2:nrow(trd),]
-	trd$label <- format(as.Date(trd$dt, tz = "Asia/Kamchatka")-1, "%d.%m")
+	trd$label <- format(as.Date(trd$dt, tz = opt$timezone)-1, "%d.%m")
 	trd$hjust <- 0
 	trd$vjust <- 0
 	trd$hjust[c(3,4,5,7,9,10)] <- 1
@@ -458,9 +459,9 @@ plotDayElevation <- function(gpx, config) {
 
 }
 
-plotDaysElevations <- function(tr){
+plotDaysElevations <- function(tr, config, timezone){
 	cat("Saving days elevation profiles... ")
-	group_map(group_by(tr, date = as.Date(tr$dt, tz=trackTZ)), ~ plotDayElevation(prepareDayElevation(.x, config), config))
+	group_map(group_by(tr, date = as.Date(tr$dt, tz=timezone)), ~ plotDayElevation(prepareDayElevation(.x, config), config))
 	cat("Completed.\n")
 }
 
@@ -505,8 +506,9 @@ if(!file.exists(opt$points)){
 }
 
 #plotElevation(gpx, opt, config, usePoints, poi)
+plotDaysElevations(gpx$track, config, opt$timezone)
 #plotOverviewMap(gpx, opt, config, usePoints, poi)
-stats <- segmentStats(gpx$track, trackTZ="Asia/Kamchatka", filename="moving.csv")
-writeSegmentStats(stats, "SegmentStats.xlsx")
+#stats <- segmentStats(gpx$track, trackTZ="Asia/Kamchatka", filename="moving.csv")
+#writeSegmentStats(stats, "SegmentStats.xlsx")
 
 cat("\nExecution completed.\n")

@@ -35,8 +35,8 @@ overview:
     colText: "red3"
     colShadow: "white"
 days:
-    width: 400
-    height: 250
+    width: 450
+    height: 300
     Axis_title: 12
     Axis_text: 10
     Axis_text_secondary: 8

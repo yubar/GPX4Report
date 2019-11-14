@@ -440,7 +440,8 @@ plotDayElevation <- function(gpx, config) {
 				, axis.text.x = element_text(size=config$days$Axis_text)
 				, axis.text.x.top = element_text(size=config$days$Axis_text_secondary)
 				, axis.text.y = element_text(size=config$days$Axis_text)
-				, axis.ticks.length=unit(.25, "cm")
+				, axis.ticks.length=unit(.15, "cm")
+				, axis.ticks.length.x.top=unit(.05, "cm")
 				, axis.ticks.y.right=element_blank()
 				, axis.text.y.right=element_blank()
 			) + 
@@ -454,8 +455,8 @@ plotDayElevation <- function(gpx, config) {
 		geom_ribbon(data=gpx$track, aes(x=l, ymin=gpx$props$ylim[1], ymax=ele), fill=config$fill$color1, alpha=config$fill$alpha, show.legend = FALSE)
 
 	ga <- ga + 
-		geom_line(data=gpx$track, aes(x=l, y=ele), alpha=0.5, size=1.5, color=config$Colors$Profile) + 
-		geom_line(data=gpx$track, aes(x=l, y=ele), alpha=1, size=1, color=config$Colors$Profile)
+		geom_line(data=gpx$track, aes(x=l, y=ele), alpha=0.5, size=1, color=config$Colors$Profile) + 
+		geom_line(data=gpx$track, aes(x=l, y=ele), alpha=1, size=0.5, color=config$Colors$Profile)
 
 	png(filename = out, width=config$days$width, height=config$days$height, units = "px", type="cairo")
 	print(ga)

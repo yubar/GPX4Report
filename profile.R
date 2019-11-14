@@ -190,19 +190,23 @@ writeSegmentStats <- function(stats, outfilename = "segmentStats.xlsx") {
 	write_xlsx(out, outfilename)
 }
 
-splitGpxDays <- function(tr){
+saveDays <- function(days){
 	suppressMessages(library(pgirmess))
+	stays <- data.frame(lon=days$lon, lat=days$lat, ele=days$ele)[2:nrow(days),]
+	stays <- cbind(label=format(days$dt[1:nrow(days)-1], "%d.%m.%Y"), stays)
+	writeGPX(stays, "stays", type="w")
+}
+
+splitGpxDays <- function(tr){
+	
 	suppressMessages(library(dplyr))
+	suppressMessages(library(pgirmess))
 	
 	saveGpx <- function(x){
 		df <- data.frame(label="", lon=x$lon, lat=x$lat, ele=x$ele)
 		nam <- format(x$dt[1],"%Y%m%d")
 		writeGPX(df, nam, type="t")
 	}
-	
-	stays <- data.frame(lon=tr$lon, lat=tr$lat, ele=tr$ele)[2:nrow(tr),]
-	stays <- cbind(label=format(tr$dt[1:nrow(tr)-1], "%d.%m.%Y"), stays)
-	writeGPX(stays, "stays", type="w")
 
 	group_map(group_by(tr, as.Date(tr$dt, tz=trackTZ)), ~ saveGpx(.x))
 }
@@ -465,9 +469,6 @@ plotDaysElevations <- function(tr, config, timezone){
 	cat("Completed.\n")
 }
 
-#setwd("d:\\GH\\scripts\\EleProfile")
-#setwd("c:\\Git\\scripts\\EleProfile")
-
 suppressMessages(library(optparse))
 
 option_list = list(
@@ -492,8 +493,11 @@ if(!file.exists(opt$track)){
 	cat(paste("Cannot find GPX input file \"", opt$track, "\".", sep=""))
 	q()
 }
+
+#setwd("d:\\GH\\scripts\\EleProfile")
+#setwd("c:\\Git\\scripts\\EleProfile")
 gpx <- parseGPX(opt$track, opt$timezone, config$Misc$ddx, config$Misc$ddy)
-#qq <- parseGPX("VAH.gpx", "Asia/Irkutsk", 0.02)
+#qq <- parseGPX("VAH.gpx", "Asia/Irkutsk", 0.0025, 0.02)
 #timezone <- "Asia/Kamchatka"
 #gpx <- parseGPX("Kamcha.gpx", "Asia/Kamchatka", 0.0025, 0.03)
 #poi <- parsePOI ("Kamcha.csv")
@@ -506,9 +510,10 @@ if(!file.exists(opt$points)){
 }
 
 #plotElevation(gpx, opt, config, usePoints, poi)
-plotDaysElevations(gpx$track, config, opt$timezone)
+#plotDaysElevations(gpx$track, config, opt$timezone)
 #plotOverviewMap(gpx, opt, config, usePoints, poi)
 #stats <- segmentStats(gpx$track, trackTZ="Asia/Kamchatka", filename="moving.csv")
 #writeSegmentStats(stats, "SegmentStats.xlsx")
+saveDays(gpx$days)
 
 cat("\nExecution completed.\n")

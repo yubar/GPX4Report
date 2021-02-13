@@ -511,10 +511,10 @@ if(!file.exists(opt$points)){
 }
 
 plotElevation(gpx, opt, config, usePoints, poi)
-plotDaysElevations(gpx$track, config, opt$timezone)
+#plotDaysElevations(gpx$track, config, opt$timezone)
 #plotOverviewMap(gpx, opt, config, usePoints, poi)
-stats <- segmentStats(gpx$track, trackTZ="Asia/Kamchatka", filename="moving.csv")
-writeSegmentStats(stats, "SegmentStats.xlsx")
-saveDays(gpx$days)
+#stats <- segmentStats(gpx$track, trackTZ="Asia/Kamchatka", filename="moving.csv")
+#writeSegmentStats(stats, "SegmentStats.xlsx")
+#saveDays(gpx$days)
 
 cat("\nExecution completed.\n")

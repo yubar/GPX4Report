@@ -1,1 +1,0 @@
-"c:\Program Files\R\R-3.6.1\bin\x64\Rscript.exe" profile.R -t "VAH.gpx" -z "Asia/Irkutsk" -p "VAH.csv" -o "VAH.png"

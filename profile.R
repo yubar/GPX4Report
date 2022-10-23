@@ -42,6 +42,8 @@ parseGPX <- function(filename, timezone, ddx, ddy){
 
 	days <- group_modify(group_by(track, as.Date(track$dt, tz=timezone)), ~ head(.x, 1))
 	days$n <- seq.int(nrow(days))
+	days$n2 <- days$n
+	days$n2[10:length(days$n2)] <- days$n2[10:length(days$n2)]+1
 	days$avg <- (days$l + dplyr::lead(days$l))/2
 	days$avg[nrow(days)] <- (days$l[nrow(days)] + props$xmax)/2
 	days$l[1] <- NA
@@ -261,7 +263,7 @@ plotElevation <- function(gpx, opt, config, usePoints = FALSE, poi = NA) {
 
 	ga <- ga + 
 		geom_linerange(data=gpx$days, aes(x=gpx$days$l, ymin=gpx$props$ylim[1], ymax=gpx$days$ele), color=config$Colors$Days) +
-		annotate("text", x = gpx$days$avg, y = gpx$props$ymin-0.85*gpx$props$dy*config$Misc$ddy, label = gpx$days$n, color = config$Colors$Days, size = config$Fontsize$Days, vjust=0) +
+		annotate("text", x = gpx$days$avg, y = gpx$props$ymin-0.85*gpx$props$dy*config$Misc$ddy, label = gpx$days$n2, color = config$Colors$Days, size = config$Fontsize$Days, vjust=0) +
 		annotate("text", x = 2.5*gpx$props$xmax*config$Misc$ddx, y = gpx$props$ymin, label=config$Labels$Days, color=config$Colors$Days, size=config$Fontsize$Days, fontface="bold", hjust=0, vjust=1)
 
 	ga <- ga + 

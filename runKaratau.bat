@@ -1,0 +1,1 @@
+"c:\Program Files\R\R-3.6.1\bin\x64\Rscript.exe" profile.R -t "Karatau.gpx" -z "Asia/Almaty" -p "Karatau.csv" -o "Karatau.png"

@@ -4,12 +4,12 @@
     <link href="http://www.garmin.com">
       <text>Garmin International</text>
     </link>
-    <time>2022-08-11T23:24:22Z</time>
+    <time>2022-10-25T18:31:04Z</time>
     <bounds maxlat="69.39317143522203" maxlon="93.877858417108655" minlat="68.389258990064263" minlon="91.590431928634644" />
   </metadata>
 
   <trk>
-    <name>Путораны 2022 факт filtered 5</name>
+    <name>Putorana fact</name>
     <extensions>
       <gpxx:TrackExtension>
         <gpxx:DisplayColor>Cyan</gpxx:DisplayColor>
@@ -19035,6 +19035,34 @@
       <trkpt lat="69.174049040302634" lon="92.334863366559148">
         <ele>718.42999999999995</ele>
         <time>2022-07-20T13:58:51Z</time>
+      </trkpt>
+      <trkpt lat="69.174049040302634" lon="92.334863366559148">
+        <ele>718.42999999999995</ele>
+        <time>2022-07-20T13:58:51Z</time>
+      </trkpt>
+      <trkpt lat="69.174131266772747" lon="92.334643844515085">
+        <ele>718.46000000000004</ele>
+        <time>2022-07-20T13:59:06Z</time>
+      </trkpt>
+      <trkpt lat="69.174216678366065" lon="92.334369337186217">
+        <ele>716.72000000000003</ele>
+        <time>2022-07-20T13:59:21Z</time>
+      </trkpt>
+      <trkpt lat="69.174358667805791" lon="92.334421053528786">
+        <ele>717.65999999999997</ele>
+        <time>2022-07-20T13:59:36Z</time>
+      </trkpt>
+      <trkpt lat="69.174425639212132" lon="92.334782397374511">
+        <ele>716.20000000000005</ele>
+        <time>2022-07-20T13:59:51Z</time>
+      </trkpt>
+      <trkpt lat="69.174475762993097" lon="92.335113734006882">
+        <ele>717.54999999999995</ele>
+        <time>2022-07-20T14:00:06Z</time>
+      </trkpt>
+      <trkpt lat="69.174533011391759" lon="92.335396120324731">
+        <ele>718.83000000000004</ele>
+        <time>2022-07-20T14:00:21Z</time>
       </trkpt>
       <trkpt lat="69.174456233158708" lon="92.336275968700647">
         <ele>748.33000000000004</ele>

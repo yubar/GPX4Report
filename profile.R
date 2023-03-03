@@ -177,6 +177,7 @@ writeSegmentStats <- function(stats, outfilename = "segmentStats.xlsx") {
 		, desc=stats$desc
 		, len=round(stats$len, 1)
 		, gain=paste0("+", round(stats$ele_gain), "\n-", round(stats$ele_loss))
+		, overalltime=secFormat(stats$time_overall, F)
 		, movtime=secFormat(stats$time_moving, F)
 	)
 	summ <- data.frame(
@@ -185,6 +186,7 @@ writeSegmentStats <- function(stats, outfilename = "segmentStats.xlsx") {
 			, "Итого:"
 			, round(sum(stats$len), 1)
 			, paste0("+", round(sum(stats$ele_gain)), "\n-", round(sum(stats$ele_loss)))
+			, secFormat(sum(stats$time_overall), F)
 			, secFormat(sum(stats$time_moving), F)
 	)
 	summ <- setNames(summ, names(out))
@@ -213,7 +215,7 @@ splitGpxDays <- function(tr){
 	group_map(group_by(tr, as.Date(tr$dt, tz=trackTZ)), ~ saveGpx(.x))
 }
 
-dayStats <- function(tr){
+dayStats <- function(tr, trackTZ){
 	stats <- group_modify(group_by(tr, date = as.Date(tr$dt, tz=trackTZ)), ~ trackSummary(.x))
 	stats <- cbind(
 		data.frame(
@@ -512,11 +514,13 @@ if(!file.exists(opt$points)){
 	poi <- parsePOI (opt$points)
 }
 
-plotElevation(gpx, opt, config, usePoints, poi)
-#plotDaysElevations(gpx$track, config, opt$timezone)
+#plotElevation(gpx, opt, config, usePoints, poi)
+plotDaysElevations(gpx$track, config, opt$timezone)
 #plotOverviewMap(gpx, opt, config, usePoints, poi)
-#stats <- segmentStats(gpx$track, trackTZ="Asia/Kamchatka", filename="moving.csv")
+#stats <- segmentStats(gpx$track, trackTZ="Asia/Krasnoyarsk", filename="moving.csv")
 #writeSegmentStats(stats, "SegmentStats.xlsx")
+#stats <- dayStats(gpx$track, trackTZ="Asia/Krasnoyarsk")
+#writeDayStats(stats)
 #saveDays(gpx$days)
 
 cat("\nExecution completed.\n")

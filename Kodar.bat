@@ -1,0 +1,1 @@
+"c:\Program Files\R\R-3.6.1\bin\x64\Rscript.exe" profile.R -t "Kodar.gpx" -z "Asia/Chita" -p "Kodar.csv" -o "Kodar.png"

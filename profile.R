@@ -135,13 +135,6 @@ trackSummary <- function(x, minspd = 0.5){
 	))
 }
 
-t<-'
-tr <- gpx$track
-fileTZ = "Europe/Moscow"
-trackTZ = "Asia/Kamchatka"
-filename="moving.csv"
-'
-
 segmentStats <- function(tr, trackTZ, filename, fileTZ = "Europe/Moscow") {
 	suppressMessages(library(readr))
 
@@ -176,7 +169,9 @@ writeSegmentStats <- function(stats, outfilename = "segmentStats.xlsx") {
 		, date=stats$date
 		, desc=stats$desc
 		, len=round(stats$len, 1)
-		, gain=paste0("+", round(stats$ele_gain), "\n-", round(stats$ele_loss))
+		, gain=round(stats$ele_gain)
+		, loss=round(stats$ele_loss)
+		, gainstr=paste0("+", round(stats$ele_gain), "\n-", round(stats$ele_loss))
 		, overalltime=secFormat(stats$time_overall, F)
 		, movtime=secFormat(stats$time_moving, F)
 	)
@@ -185,6 +180,8 @@ writeSegmentStats <- function(stats, outfilename = "segmentStats.xlsx") {
 			, NA
 			, "Итого:"
 			, round(sum(stats$len), 1)
+			, round(sum(stats$ele_gain))
+			, round(sum(stats$ele_loss))
 			, paste0("+", round(sum(stats$ele_gain)), "\n-", round(sum(stats$ele_loss)))
 			, secFormat(sum(stats$time_overall), F)
 			, secFormat(sum(stats$time_moving), F)
@@ -201,7 +198,7 @@ saveDays <- function(days){
 	writeGPX(stays, "stays", type="w")
 }
 
-splitGpxDays <- function(tr){
+splitGpxDays <- function(tr, trackTZ){
 	
 	suppressMessages(library(dplyr))
 	suppressMessages(library(pgirmess))
@@ -289,119 +286,6 @@ plotElevation <- function(gpx, opt, config, usePoints = FALSE, poi = NA) {
 	cat("Completed.\n")
 }
 
-
-
-plotOverviewMap <- function(gpx, opt, config, usePoints = FALSE, poi = NA){
-
-	suppressMessages(library(raster))
-	suppressMessages(library(ggplot2))
-	suppressMessages(library(ggspatial))
-	suppressMessages(library(shadowtext))
-	
-	cat("Reading GeoTiff... ")
-	s <- stack("Kamcha_overview.tif")
-	cat("Done\n")
-	
-	tr <- as.data.frame(gpx$track)
-	coordinates(tr) <- ~ lon + lat
-	proj4string(tr) <- "+init=epsg:4326"
-	tr <- spTransform(tr, CRS = CRS("+proj=merc +a=6378137 +b=6378137 +lat_ts=0.0 +lon_0=0.0 +x_0=0.0 +y_0=0 +k=1.0 +units=m +nadgrids=@null +no_defs"))
-	tr <- data.frame(tr)
-	
-	
-
-	source("ggplotRGB.R")
-
-	arr <- arrow(angle = 20, length = unit(1, "cm"), ends = "last", type = "closed")
-	arrW <- arrow(angle = 30, length = unit(1.5, "cm"), ends = "last", type = "closed")
-	
-	cat("Making plot... ")
-	g <- ggplotRGB(s, npix = ncell(s))
-	#g <- ggplot()
-
-	g <- g + geom_path(data = tr, aes(x=lon, y=lat), alpha=0.75, size=3, colour=config$overview$colTrack)
-
-	g <- g + annotation_scale(location = "tl", width_hint = 1/10, height=unit(0.5, "cm"), bar_cols = c("gray30", "white"), text_col="black", text_cex = 2, plot_unit="m", pad_x = unit(20, "cm"), pad_y = unit(2, "cm"))
-	g <- g + annotation_scale(location = "br", width_hint = 1/10, height=unit(0.5, "cm"), bar_cols = c("gray30", "white"), text_col="black", text_cex = 2, plot_unit="m", pad_y = unit(4, "cm"))
-
-	# g <- g +
-		# scale_y_continuous(breaks=seq(0, max(tr$lat), by = 5000)) +
-		# scale_x_continuous(breaks=seq(0, max(tr$lon), by = 5000)) +
-		# theme(axis.text.x = element_text(angle = 90))
-
-	#arrows
-	g <- g + geom_curve(aes(x = 17585000, y = 7200000, xend = 17590000, yend = 7190000), curvature = 0.2, arrow = arr, colour=config$overview$colArrows, size = 2, alpha=0.75, lineend = "butt")
-
-	g <- g + geom_curve(aes(x = 17604000, y = 7139000, xend = 17609000, yend = 7144000), curvature = 0.2, arrow = arr, colour=config$overview$colArrows, size = 2, alpha=0.75, lineend = "butt")
-
-	g <- g + geom_curve(aes(x = 17645000, y = 7135000, xend = 17652500, yend = 7130000), curvature = -0.5, arrow = arr, colour=config$overview$colArrows, size = 2, alpha=0.75, lineend = "butt")
-	g <- g + geom_curve(aes(x = 17657000, y = 7127000, xend = 17663000, yend = 7123000), curvature = 0.1, arrow = arr, colour=config$overview$colArrows, size = 2, alpha=0.75, lineend = "butt")
-
-	g <- g + geom_curve(aes(x = 17685000, y = 7090000, xend = 17692000, yend = 7098000), curvature = 0.2, arrow = arr, colour=config$overview$colArrows, size = 2, alpha=0.75, lineend = "butt")
-	g <- g + geom_curve(aes(x = 17694500, y = 7095000, xend = 17678000, yend = 7082000), curvature = -0.2, arrow = arr, colour=config$overview$colArrows, size = 2, alpha=0.75, lineend = "butt")
-
-	g <- g + geom_curve(aes(x = 17672000, y = 7031000, xend = 17679000, yend = 7031000), curvature = 0.2, arrow = arr, colour=config$overview$colArrows, size = 2, alpha=0.75, lineend = "butt")
-	g <- g + geom_curve(aes(x = 17681000, y = 7032000, xend = 17674000, yend = 7034000), curvature = 0.3, arrow = arr, colour=config$overview$colArrows, size = 2, alpha=0.75, lineend = "butt")
-	
-	#nights
-	trd <- as.data.frame(gpx$days)
-	coordinates(trd) <- ~ lon + lat
-	proj4string(trd) <- "+init=epsg:4326"
-	trd <- spTransform(trd, CRS = CRS("+proj=merc +a=6378137 +b=6378137 +lat_ts=0.0 +lon_0=0.0 +x_0=0.0 +y_0=0 +k=1.0 +units=m +nadgrids=@null +no_defs"))
-	trd <- data.frame(trd)[2:nrow(trd),]
-	trd$label <- format(as.Date(trd$dt, tz = opt$timezone)-1, "%d.%m")
-	trd$hjust <- 0
-	trd$vjust <- 0
-	trd$hjust[c(3,4,5,7,9,10)] <- 1
-	trd$vjust[c(9,10,14)] <- 1
-	trd$xnudge <- (-1)^trd$hjust*550
-	trd$ynudge <- (-1)^trd$vjust*250
-	trd$xnudge[c(3,4,7,9,10,14)] <- c(-700, -700, -700, -700 , -700, 500)
-	trd$ynudge[c(3,4,7,9,10,11,12,14)] <- c(-100, -100, 0, 100, 100, 1000, 100, -1000)
-	g <- g + geom_point(aes(x = trd$lon, y = trd$lat), colour = config$overview$colShadow, shape=24, size=9, stroke=4, alpha=0.5)
-	g <- g + geom_point(aes(x = trd$lon, y = trd$lat), colour = config$overview$colPoints, shape=24, size=9, stroke=2)
-	g <- g + geom_shadowtext(aes(x = trd$lon, y = trd$lat, label= trd$label), colour = config$overview$colText, bg.colour = config$overview$colShadow, bg.r=0.3, size=8, hjust=trd$hjust, vjust=trd$vjust, nudge_x=trd$xnudge, nudge_y=trd$ynudge, alpha=0.5)
-	g <- g + geom_text(aes(x = trd$lon, y = trd$lat, label= trd$label), colour = config$overview$colText, size=8, hjust=trd$hjust, vjust=trd$vjust, nudge_x=trd$xnudge, nudge_y=trd$ynudge, alpha=0.9)
-	
-	
-	#start
-	g <- g + geom_text(aes(x = tr$lon[1], y = tr$lat[1]), label=config$Labels$OverviewStart, colour=config$overview$colText, size=10, hjust=0, vjust=1, nudge_x=1000, nudge_y=0)
-	g <- g + geom_curve(aes(x = tr$lon[1], y = tr$lat[1], xend = tr$lon[10], yend = tr$lat[10]), curvature = 0, arrow = arrW, colour=config$overview$colText, size = 2, alpha=0.75, lineend = "butt")
-	#finish
-	g <- g + geom_point(aes(x = tr$lon[nrow(tr)], y = tr$lat[nrow(tr)]), colour = config$overview$colPoints, shape=21, size=15, stroke=3)
-	g <- g + geom_text(aes(x = tr$lon[nrow(tr)], y = tr$lat[nrow(tr)]), label=config$Labels$OverviewEnd, colour=config$overview$colText, size=10, hjust=1, vjust=0.5, nudge_x=-1000)
-	
-	#g
-	
-	g <- g + theme(
-				panel.margin = unit(0, "null")
-				, plot.margin = unit(c(0, 0, 0, 0), "mm")
-				, axis.title.x = element_blank()
-				, axis.title.y = element_blank()
-				, axis.text.x = element_blank()
-				, axis.text.y = element_blank()
-				, axis.ticks.length = unit(0, "null")
-				, panel.grid.major = element_blank()
-				, panel.grid.minor = element_blank()
-			)
-	cat("Done\n")
-	
-	cat("Saving output... ")
-	png(filename = "Kamcha_overview.png", width=ncol(s), height=nrow(s), units = "px", type="cairo")
-	print(g)
-	invisible(dev.off())
-	cat("Done\n")
-
-	cat("Breaking output... ")
-	suppressMessages(library(magick))
-	img <- image_read("Kamcha_overview.png")
-	itop <- image_crop(img, "1860x2600+70+30")
-	ibtm <- image_crop(img, "1860x2600-0-50", "SouthEast")
-	image_write(itop, path = "Kamcha_overview_1.png", format = "png")
-	image_write(ibtm, path = "Kamcha_overview_2.png", format = "png")
-	cat("Done\n")
-}
-
 prepareDayElevation <- function(tr, config) {
 	names(tr)[names(tr)=="l"]<-"lcum"
 	tr$l <- dplyr::lag(cumsum(tr$leg))/1000
@@ -481,7 +365,8 @@ option_list = list(
 	make_option(c("-t", "--track"), type="character", default="track.gpx", help="GPX track file name [default = %default]"),
 	make_option(c("-c", "--config"), type="character", default="config.yml", help="YAML configuration file [default = %default]"),
 	make_option(c("-p", "--points"), type="character", default="points.csv", help="CSV file with POIs [default = %default]"),
-	make_option(c("-o", "--out"), type="character", default="profile.png", help="Output file name [default = %default]")
+	make_option(c("-o", "--out"), type="character", default="profile.png", help="Output file name [default = %default]"),
+	make_option(c("-m", "--moving"), type="character", default="moving.csv", help="CSV file with breaks for moving stats [default = %default]")
 )
 
 opt_parser = OptionParser(option_list=option_list)
@@ -504,7 +389,7 @@ if(!file.exists(opt$track)){
 gpx <- parseGPX(opt$track, opt$timezone, config$Misc$ddx, config$Misc$ddy)
 #qq <- parseGPX("VAH.gpx", "Asia/Irkutsk", 0.0025, 0.02)
 #timezone <- "Asia/Kamchatka"
-#gpx <- parseGPX("Kamcha.gpx", "Asia/Kamchatka", 0.0025, 0.03)
+#gpx <- parseGPX("Alay.gpx", "Asia/Bishkek", 0.0025, 0.03)
 #poi <- parsePOI ("Kamcha.csv")
 usePoints <- FALSE
 if(!file.exists(opt$points)){
@@ -514,13 +399,18 @@ if(!file.exists(opt$points)){
 	poi <- parsePOI (opt$points)
 }
 
-#plotElevation(gpx, opt, config, usePoints, poi)
-plotDaysElevations(gpx$track, config, opt$timezone)
-#plotOverviewMap(gpx, opt, config, usePoints, poi)
-#stats <- segmentStats(gpx$track, trackTZ="Asia/Krasnoyarsk", filename="moving.csv")
-#writeSegmentStats(stats, "SegmentStats.xlsx")
+plotElevation(gpx, opt, config, usePoints, poi)
+#plotDaysElevations(gpx$track, config, opt$timezone)
+
 #stats <- dayStats(gpx$track, trackTZ="Asia/Krasnoyarsk")
 #writeDayStats(stats)
 #saveDays(gpx$days)
+
+if(file.exists(opt$moving)){
+	stats <- segmentStats(gpx$track, trackTZ=opt$timezone, filename=opt$moving)
+	writeSegmentStats(stats, "SegmentStats.xlsx")
+}
+
+#splitGpxDays(gpx$track, opt$timezone)
 
 cat("\nExecution completed.\n")

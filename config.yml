@@ -1,6 +1,6 @@
 Misc:
     ddx: 0.0025
-    ddy: 0.03
+    ddy: 0.05
 Colors:
     Days: "red3"
     Profile: "forestgreen"

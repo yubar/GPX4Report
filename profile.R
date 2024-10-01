@@ -385,11 +385,12 @@ if(!file.exists(opt$track)){
 }
 
 #setwd("d:\\GH\\scripts\\EleProfile")
-#setwd("c:\\Git\\scripts\\EleProfile")
+#setwd("c:\\Git\\GPX4Report")
 gpx <- parseGPX(opt$track, opt$timezone, config$Misc$ddx, config$Misc$ddy)
 #qq <- parseGPX("VAH.gpx", "Asia/Irkutsk", 0.0025, 0.02)
 #timezone <- "Asia/Kamchatka"
 #gpx <- parseGPX("Alay.gpx", "Asia/Bishkek", 0.0025, 0.03)
+#gpx <- parseGPX("Fanns.gpx", "Asia/Dushanbe", 0.0025, 0.03)
 #poi <- parsePOI ("Kamcha.csv")
 usePoints <- FALSE
 if(!file.exists(opt$points)){
@@ -402,7 +403,7 @@ if(!file.exists(opt$points)){
 plotElevation(gpx, opt, config, usePoints, poi)
 #plotDaysElevations(gpx$track, config, opt$timezone)
 
-#stats <- dayStats(gpx$track, trackTZ="Asia/Krasnoyarsk")
+#stats <- dayStats(gpx$track, trackTZ=opt$timezone)
 #writeDayStats(stats)
 #saveDays(gpx$days)
 

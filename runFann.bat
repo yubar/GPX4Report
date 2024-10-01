@@ -1,0 +1,1 @@
+"c:\Program Files\R\R-3.6.1\bin\x64\Rscript.exe" profile.R -t "Fanns.gpx" -z "Asia/Dushanbe" -p "Fanns.csv" -o "Fanns.png"

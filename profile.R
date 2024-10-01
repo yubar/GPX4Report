@@ -201,15 +201,21 @@ saveDays <- function(days){
 splitGpxDays <- function(tr, trackTZ){
 	
 	suppressMessages(library(dplyr))
-	suppressMessages(library(pgirmess))
+	suppressMessages(library(rgdal))
 	
 	saveGpx <- function(x){
-		df <- data.frame(label="", lon=x$lon, lat=x$lat, ele=x$ele)
-		nam <- format(x$dt[1],"%Y%m%d")
-		writeGPX(df, nam, type="t")
+		nam <- paste(format(x$dt[1],"%Y%m%d"),".gpx", sep="")
+		data <- data.frame(ele=x$ele, time=x$time)
+		data[,"track_fid"]<-0
+		data[,"track_seg_id"]<-0
+		data[,"track_seg_point_id"]<-0:(nrow(data)-1)
+		spdf = SpatialPointsDataFrame(data.frame(x=x$lon, y=x$lat), data)
+		writeOGR(obj=spdf, dsn=nam, layer="track_points", driver="GPX", dataset_options ="FORCE_GPX_TRACK=true", overwrite_layer=T)
+		
 	}
 
 	group_map(group_by(tr, as.Date(tr$dt, tz=trackTZ)), ~ saveGpx(.x))
+	return(invisible(NULL))
 }
 
 dayStats <- function(tr, trackTZ){

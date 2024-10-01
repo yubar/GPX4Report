@@ -42,8 +42,9 @@ parseGPX <- function(filename, timezone, ddx, ddy){
 
 	days <- group_modify(group_by(track, as.Date(track$dt, tz=timezone)), ~ head(.x, 1))
 	days$n <- seq.int(nrow(days))
-	days$n2 <- days$n
-	days$n2[10:length(days$n2)] <- days$n2[10:length(days$n2)]+1
+	### following is a quick&dirty fix for days without moving
+	#days$n2 <- days$n
+	#days$n2[10:length(days$n2)] <- days$n2[10:length(days$n2)]+1
 	days$avg <- (days$l + dplyr::lead(days$l))/2
 	days$avg[nrow(days)] <- (days$l[nrow(days)] + props$xmax)/2
 	days$l[1] <- NA
@@ -111,15 +112,15 @@ trackSummary <- function(x, minspd = 0.5){
 	time_overall <- as.numeric(difftime(x$dt[nrow(x)],x$dt[1], unit="secs"))
 	len = sum(x$leg)/1000
 	
-	x <- x[x$spd >= minspd,]
 	
+	ele <- rollapply(x$ele, width = 5, by = 1, FUN = mean, align = "center")
 	
-	ele <- rollapply(x$ele, width = 5, by = 3, FUN = mean, align = "center")
-	
-	ele <- c(x$ele[1], ele, x$ele[nrow(x)])
+	ele <- c(mean(x$ele[1:3]), mean(x$ele[1:4]), ele, mean(x$ele[(nrow(x)-3):nrow(x)]), mean(x$ele[(nrow(x)-2):nrow(x)]))
 	
 	dele <- diff(ele)
 
+	x <- x[x$spd >= minspd,]
+	
 	return(data.frame(
 		time_overall = time_overall,
 		time_moving = sum(x$ltm),

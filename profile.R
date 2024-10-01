@@ -358,6 +358,69 @@ plotDaysElevations <- function(tr, config, timezone){
 	cat("Completed.\n")
 }
 
+extractExtrema <- function(track, minDiff) {
+	currentMax <- track$ele[1]
+	currentMin <- track$ele[1]
+	ixMin <- 1
+	ixMax <- 1
+	last <- 0
+	extrema <- data.frame(i=integer(0), currentEle=numeric(0), typ=character(0), ix=integer(0), ele=numeric(0))
+	points <- data.frame(L=numeric(0), Ele=numeric(0), Name=character(0), sep=character(0), hjust=numeric(0), vjust=numeric(0), xnudge=numeric(0), ynudge=numeric(0), length=numeric(0))
+	for (i in 2:length(ele)){
+		if(track$ele[i] > currentMax) { 
+			currentMax = track$ele[i]
+			ixMax = i
+			if(track$ele[i] >= currentMin + minDiff){
+				if (last != -1) {
+					#print(c(i,  track$ele[i], "min", ixMin, currentMin))
+					#extrema <- rbind(extrema, setNames(as.list(c(i, track$ele[i], "min", ixMin, currentMin)),names(extrema)),stringsAsFactors = FALSE)
+					points <- rbind(points, setNames(as.list(c(
+						track$l[ixMin], 
+						round(currentMin, digits = 0), 
+						paste0("min: ", round(track$l[ixMin], digits = 1),"km/",round(currentMin, digits = 1),"m")
+						,"\\n"
+						,0.5
+						,1
+						,NA,NA,NA
+					))
+					,names(points)),stringsAsFactors = FALSE)
+					last = -1
+				}
+				currentMin = track$ele[i]
+				ixMin = i
+			}
+		}
+		if(track$ele[i] < currentMin) { 
+			currentMin = track$ele[i]
+			ixMin = i
+			if(track$ele[i] <= currentMax - minDiff){
+				if (last != 1){
+					#print(c(i,  track$ele[i], "max", ixMax, currentMax))
+					#extrema <- rbind(extrema, setNames(as.list(c(i, track$ele[i], "max", ixMax, currentMax)),names(extrema)),stringsAsFactors = FALSE)
+					points <- rbind(points, setNames(as.list(c(
+						track$l[ixMax], 
+						round(currentMax, digits = 0), 
+						paste0("max: ", round(track$l[ixMax], digits = 1),"km/",round(currentMax, digits = 1),"m")
+						,"\\n"
+						,0.5
+						,0
+						,NA,NA,NA
+					))
+					,names(points)),stringsAsFactors = FALSE)
+					last = 1
+				}
+				currentMax = track$ele[i]
+				ixMax = i
+			}
+		}
+	}
+	
+	return(points)
+}
+# ddd <-extractExtrema (gpx$track,100)
+# write.csv(ddd,"qqq.csv", row.names = FALSE, quote=FALSE, na = "")
+
+
 suppressMessages(library(optparse))
 
 option_list = list(

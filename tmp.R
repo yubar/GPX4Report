@@ -79,3 +79,22 @@ plotDaysElevations <- function(tr){
 
 
 group_modify(group_by(tr, date = as.Date(tr$dt, tz=trackTZ)), ~ .x[1,])
+
+saveStays <- function(tr, trackTZ){
+	
+	suppressMessages(library(dplyr))
+	suppressMessages(library(rgdal))
+	
+	stays <- SpatialPointsDataFrame(data.frame(x=tr$lon[1], y=tr$lat[1]), data.frame(name="Start"))
+	
+	addStay <- function(x){
+		nam <- format(x$dt[1],"%d.%m")
+		stays <<- rbind(stays, SpatialPointsDataFrame(data.frame(x=x$lon[nrow(x)], y=x$lat[nrow(x)]), data.frame(name=nam)))
+		return(invisible(NULL))
+	}
+
+	group_map(group_by(tr, as.Date(tr$dt, tz=trackTZ)), ~ addStay(.x))
+	
+	writeOGR(obj=stays, dsn="stays.gpx", layer="waypoints", driver="GPX", overwrite_layer=T)
+	return(invisible(NULL))
+}
